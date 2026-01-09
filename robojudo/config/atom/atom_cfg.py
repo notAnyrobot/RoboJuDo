@@ -46,11 +46,13 @@ class atom_beyondmimic(RlPipelineCfg):
     ]
 
     policy: AtomBeyondMimicPolicyCfg = AtomBeyondMimicPolicyCfg(
-        policy_name="Slow_walk",
-        without_state_estimator=False,
+        policy_name="walk_straight",
+        # policy_name="run1_subjec2_20000",
+        # policy_name="single",
+        without_state_estimator=True,
         use_modelmeta_config=True,  # use robot dof config from modelmeta
         use_motion_from_model=True, #use motion from onnx model
-        max_timestep=600,
+        max_timestep=9999,
     )
 
 
@@ -60,7 +62,7 @@ class atom_beyondmimic_with_ctrl(RlPipelineCfg):
     BeyondMimic with External BeyondMimicCtrl as motion source.
     """
 
-    robot: str = "g1"
+    robot: str = "atom"
     env: AtomMujocoEnvCfg = AtomMujocoEnvCfg()
     ctrl: list[KeyboardCtrlCfg | AtomBeyondmimicCtrlCfg] = [
         KeyboardCtrlCfg(),

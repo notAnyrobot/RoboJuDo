@@ -11,11 +11,13 @@ CFG_REGISTRY: dict[str, tuple[str, str]] = {
     "g1_23_mujoco_env": (".env.g1_mujuco_env_cfg", "G1_23MujocoEnvCfg"),
     "g1_dummy_env": (".env.g1_dummy_env_cfg", "G1DummyEnvCfg"),
     "g1_real_env": (".env.g1_real_env_cfg", "G1RealEnvCfg"),
+    "atom_mujoco_env": (".env.atom_mujoco_env_cfg", "AtomMujocoEnvCfg"),
     # policy
     "g1_unitree_policy": (".policy.g1_unitree_policy_cfg", "G1UnitreePolicyCfg"),
     "g1_smooth_policy": (".policy.g1_smooth_policy_cfg", "G1SmoothPolicyCfg"),
     "g1_amo_policy": (".policy.g1_amo_policy_cfg", "G1AmoPolicyCfg"),
     "g1_beyondmimic_policy": (".policy.g1_beyondmimic_policy_cfg", "G1BeyondMimicPolicyCfg"),
+    "atom_beyondmimic_policy": (".policy.atom_beyondmimic_policy_cfg", "AtomBeyondMimicPolicyCfg"),
     # ctrl
     "keyboard_ctrl": ("robojudo.controller.keyboard_ctrl", "KeyboardCtrlCfg"),
     "joystick_ctrl": ("robojudo.controller.joystick_ctrl", "JoystickCtrlCfg"),

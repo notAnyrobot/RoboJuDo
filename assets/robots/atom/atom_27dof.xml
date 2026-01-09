@@ -270,6 +270,13 @@
     </body>
   </worldbody>
 
+  <contact>
+    <exclude body1="pelvis" body2="right_hip_roll_link"/>
+    <exclude body1="pelvis" body2="left_hip_roll_link"/>
+    <exclude body1="left_wrist_yaw_link" body2="left_elbow_link"/>
+    <exclude body1="right_wrist_yaw_link" body2="right_elbow_link"/>
+  </contact>  
+
   <actuator>
     <motor name="left_hip_pitch_joint" joint="left_hip_pitch_joint"/>
     <motor name="left_hip_roll_joint" joint="left_hip_roll_joint"/>
