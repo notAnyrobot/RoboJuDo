@@ -28,6 +28,7 @@ class MujocoEnv(Environment):
         self.model = mujoco.MjModel.from_xml_path(cfg_env.xml)  # pyright: ignore[reportAttributeAccessIssue]
         self.model.opt.timestep = self.sim_dt
         self.data = mujoco.MjData(self.model)  # pyright: ignore[reportAttributeAccessIssue]
+        self._refresh_model_mappings()
         # mujoco.mj_resetDataKeyframe(self.model, self.data, 0)
         mujoco.mj_step(self.model, self.data)  # pyright: ignore[reportAttributeAccessIssue]
 
@@ -55,6 +56,64 @@ class MujocoEnv(Environment):
         self._apply_random_heading()
 
         self.update()  # get initial state
+
+    def update_dof_cfg(self, override_cfg=None):
+        super().update_dof_cfg(override_cfg=override_cfg)
+        if hasattr(self, "model"):
+            self._refresh_model_mappings()
+
+    @staticmethod
+    def _joint_id(model: mujoco.MjModel, joint_name: str) -> int:
+        joint_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, joint_name)
+        if joint_id == -1:
+            raise ValueError(f"Joint {joint_name} not found in MuJoCo model")
+        return joint_id
+
+    @staticmethod
+    def _build_joint_qpos_indices(model: mujoco.MjModel, joint_names: list[str]) -> np.ndarray:
+        return np.asarray(
+            [
+                model.jnt_qposadr[MujocoEnv._joint_id(model, joint_name)]
+                for joint_name in joint_names
+            ],
+            dtype=np.int64,
+        )
+
+    @staticmethod
+    def _build_joint_qvel_indices(model: mujoco.MjModel, joint_names: list[str]) -> np.ndarray:
+        return np.asarray(
+            [
+                model.jnt_dofadr[MujocoEnv._joint_id(model, joint_name)]
+                for joint_name in joint_names
+            ],
+            dtype=np.int64,
+        )
+
+    @staticmethod
+    def _build_actuator_ctrl_indices(model: mujoco.MjModel, joint_names: list[str]) -> np.ndarray:
+        joint_name_to_actuator_id = {}
+        for actuator_id in range(model.nu):
+            joint_id = int(model.actuator_trnid[actuator_id][0])
+            joint_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, joint_id)
+            if joint_name in joint_name_to_actuator_id:
+                raise ValueError(f"Multiple actuators found for joint {joint_name}")
+            joint_name_to_actuator_id[joint_name] = actuator_id
+
+        missing_joint_names = [
+            joint_name for joint_name in joint_names if joint_name not in joint_name_to_actuator_id
+        ]
+        if missing_joint_names:
+            raise ValueError(f"No actuators found for joints: {missing_joint_names}")
+
+        return np.asarray(
+            [joint_name_to_actuator_id[joint_name] for joint_name in joint_names],
+            dtype=np.int64,
+        )
+
+    def _refresh_model_mappings(self):
+        self._joint_qpos_indices = self._build_joint_qpos_indices(self.model, self.joint_names)
+        self._joint_qvel_indices = self._build_joint_qvel_indices(self.model, self.joint_names)
+        self._actuator_ctrl_indices = self._build_actuator_ctrl_indices(self.model, self.joint_names)
 
     def _apply_random_heading(self):
         """Rotate the root body by a random yaw if random_heading is enabled."""
@@ -102,8 +161,8 @@ class MujocoEnv(Environment):
 
     def update(self, simple=False):  # TODO: clean sensors in xml
         """simple: only update dof pos & vel"""
-        dof_pos = self.data.qpos.astype(np.float32)[-self.num_dofs :]
-        dof_vel = self.data.qvel.astype(np.float32)[-self.num_dofs :]
+        dof_pos = self.data.qpos.astype(np.float32)[self._joint_qpos_indices]
+        dof_vel = self.data.qvel.astype(np.float32)[self._joint_qvel_indices]
 
         self._dof_pos = dof_pos.copy()
         self._dof_vel = dof_vel.copy()
@@ -150,7 +209,7 @@ class MujocoEnv(Environment):
             torque = (pd_target - self.dof_pos) * self.stiffness - self.dof_vel * self.damping
             torque = np.clip(torque, -self.torque_limits, self.torque_limits)
 
-            self.data.ctrl = torque
+            self.data.ctrl[self._actuator_ctrl_indices] = torque
 
             mujoco.mj_step(self.model, self.data)  # pyright: ignore[reportAttributeAccessIssue]
             self.update(simple=True)

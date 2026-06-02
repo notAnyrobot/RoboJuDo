@@ -134,24 +134,12 @@ class ProtoMotionsTrackerPolicy(Policy):
         self._heading_offset = None
         self.reset()
 
-    # G1 default standing pose (from protomotions.robot_configs.g1)
-    _G1_DEFAULT_JOINT_POS = {
-        ".*_hip_pitch_joint": -0.312,
-        ".*_knee_joint": 0.669,
-        ".*_ankle_pitch_joint": -0.363,
-        ".*_elbow_joint": 0.6,
-        "left_shoulder_roll_joint": 0.2,
-        "left_shoulder_pitch_joint": 0.2,
-        "right_shoulder_roll_joint": -0.2,
-        "right_shoulder_pitch_joint": 0.2,
-    }
-
     def _resolve_default_dof_pos(self, joint_names: list[str]) -> np.ndarray:
         """Resolve default DOF positions via regex-pattern matching."""
-        DEFAULT_JOINT_POS = self._G1_DEFAULT_JOINT_POS
+        default_joint_pos_patterns = self.cfg_policy.default_joint_pos_patterns
 
         default_pos = np.zeros(len(joint_names), dtype=np.float32)
-        for pattern, value in DEFAULT_JOINT_POS.items():
+        for pattern, value in default_joint_pos_patterns.items():
             for i, name in enumerate(joint_names):
                 if re.fullmatch(pattern, name):
                     default_pos[i] = value
