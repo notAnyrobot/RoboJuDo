@@ -141,28 +141,52 @@ Currently, **RoboJuDo** supports the following policy–environment combinations
 
 # 🛠️Easy Setup
 
-RoboJuDo supports **multiple platforms**, officially tested on **Ubuntu**, **macOS**and **Windows**. 
+RoboJuDo supports **multiple platforms**, officially tested on **Ubuntu**, **macOS** and **Windows**.
 
 Robot onboard PCs are also supported.
+
+RoboJuDo uses [`uv`](https://docs.astral.sh/uv/) as the primary Python environment manager. Install `uv` first if it is not already available:
+
+macOS / Linux:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Windows PowerShell:
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
 
 
 ## 1️⃣ Basic Installation
 
-**Step 1: Clone the repository and create a Python environment**
+**Step 1: Clone the repository and create a uv-managed Python environment**
 
 ```bash
 git clone https://github.com/HansZ8/RoboJuDo.git
 cd RoboJuDo/
-# Example using conda
-conda create -n robojudo python=3.11 -y
-conda activate robojudo
+uv venv --python 3.11
+
+# macOS / Linux
+source .venv/bin/activate
+
+# Windows PowerShell
+# .venv\Scripts\Activate.ps1
 ```
 **Step 2: Install RoboJuDo**
 
 ```bash
-# Optional, install cpu version for speed up
-pip install torch --index-url https://download.pytorch.org/whl/cpu
-pip install -e .
+# Optional: preinstall CPU-only torch
+uv pip install torch --default-index https://download.pytorch.org/whl/cpu
+uv pip install -e .
+```
+
+If your checkout includes a committed `uv.lock`, use the locked environment instead:
+
+```bash
+uv sync --python 3.11 --frozen
 ```
 
 ## 2️⃣ Install Optional Modules
@@ -191,10 +215,10 @@ Edit [submodule_cfg.yaml](./submodule_cfg.yaml) to select modules, by setting `i
 
 ```bash
 # Install all required modules
-python submodule_install.py
+uv run python submodule_install.py
 
 # Or specify modules to install with args
-# python submodule_install.py unitree_cpp
+# uv run python submodule_install.py unitree_cpp
 ```
 
 # 📖Quick Start
@@ -215,7 +239,7 @@ Begin your journey with unitree g1 sim2sim.
 
 ```bash
 # run the default g1 sim2sim cfg
-python scripts/run_pipeline.py
+uv run python scripts/run_pipeline.py
 ```
 
 You can control the motivation using any Xbox controller:
@@ -231,7 +255,7 @@ You can control the motivation using any Xbox controller:
 <!-- For cooler policy, run:
 
 ```bash
-python scripts/run_pipeline.py -c g1_beyondmimic
+uv run python scripts/run_pipeline.py -c g1_beyondmimic
 ```
 You can control the simulation environment using the Keyboard:
 
@@ -273,7 +297,7 @@ Refer to [official guide](https://github.com/unitreerobotics/unitree_rl_gym/blob
 Then start the pipeline on the real robot:
 
 ```bash
-python scripts/run_pipeline.py -c g1_real
+uv run python scripts/run_pipeline.py -c g1_real
 ```
 
 Your robot should move into default pos. 
@@ -293,8 +317,8 @@ You can control the real robot using the Unitree controller:
 Try the out of box experience of **BeyondMimic** and **ASAP**:
 
 ```bash
-python scripts/run_pipeline.py -c g1_beyondmimic
-python scripts/run_pipeline.py -c g1_asap
+uv run python scripts/run_pipeline.py -c g1_beyondmimic
+uv run python scripts/run_pipeline.py -c g1_asap
 ```
 
 check documentation [BeyondmimicPolicy](./docs/policy.md/#policy--beyondmimicpolicy) and [AsapPolicy](./docs/policy.md/#policy--asappolicy) for more details.
@@ -303,7 +327,7 @@ check documentation [BeyondmimicPolicy](./docs/policy.md/#policy--beyondmimicpol
 `g1_switch` config in [g1_cfg.py](robojudo/config/g1/g1_cfg.py) is equipped with Multi-Policy Pipeline.
 
 ```bash
-python scripts/run_pipeline.py -c g1_switch
+uv run python scripts/run_pipeline.py -c g1_switch
 ```
 
 Xbox Controller:
@@ -323,8 +347,8 @@ For deploying **Motion Mimic Policies** with **Locomotion** as backup, we built 
 Check `g1_locomimic` config in [g1_cfg.py](robojudo/config/g1/g1_cfg.py), and more fancy locomimic configs in [g1_loco_mimic_cfg.py](robojudo/config/g1/g1_loco_mimic_cfg.py).
 
 ```bash
-python scripts/run_pipeline.py -c g1_locomimic_beyondmimic
-python scripts/run_pipeline.py -c g1_locomimic_asap
+uv run python scripts/run_pipeline.py -c g1_locomimic_beyondmimic
+uv run python scripts/run_pipeline.py -c g1_locomimic_asap
 ```
 
 We have the same Keyboard control as ASAP:
@@ -351,7 +375,7 @@ Please first follow the official workflow from [NVLabs / ProtoMotions](https://n
 Then you can run the built-in RoboJuDo config directly:
 
 ```bash
-python scripts/run_tracker_pipeline.py -c g1_protomotions_tracker \
+uv run python scripts/run_tracker_pipeline.py -c g1_protomotions_tracker \
   --motion-path assets/motions/g1/g1_bones_seed_mini.pt \
   --motion-index 0
 ```

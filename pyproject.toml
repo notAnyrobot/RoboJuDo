@@ -26,6 +26,9 @@ dev = [
     "ruff==0.12.7",
 ]
 
+[tool.uv.sources]
+mujoco-python-viewer = { path = "third_party/mujoco_viewer", editable = true }
+
 [tool.ruff]
 line-length = 120
 target-version = "py310"

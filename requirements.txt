@@ -11,6 +11,7 @@ zmq
 pynput
 pydantic
 mujoco
+mujoco-python-viewer
 msgpack
 msgpack-numpy
 colorlog
