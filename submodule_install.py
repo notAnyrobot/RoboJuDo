@@ -67,7 +67,7 @@ def install_submodules(selected=None):
         if (extra_packages := info.get("extra_packages", None)) is not None:
             packages += extra_packages
         for pkg in packages:
-            run(f"pip install -e {pkg}")
+            run(f"uv pip install -e {pkg}")
 
 
 if __name__ == "__main__":

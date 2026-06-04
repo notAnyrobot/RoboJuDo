@@ -4,7 +4,7 @@ import mujoco
 import numpy as np
 
 from robojudo.config.config_manager import ConfigManager
-from robojudo.environment.mujoco_env import MujocoEnv
+from robojudo.environment.mujoco_env import MujocoEnv, _viewer_accepts_kwarg
 from robojudo.policy.protomotions_tracker_policy import ProtoMotionsTrackerPolicy
 
 
@@ -77,6 +77,27 @@ def test_astro_mujoco_maps_joints_and_actuators_by_name():
     assert qvel_indices[13] == model.jnt_dofadr[waist_pitch_id]
     assert ctrl_indices[13] == actuator_joint_names.index("waist_pitch_joint")
     assert ctrl_indices[14] == actuator_joint_names.index("waist_roll_joint")
+
+
+def test_viewer_kwarg_detection_handles_patched_and_unpatched_viewers():
+    class UnpatchedViewer:
+        def __init__(self, model, data, width=None, height=None, hide_menus=False):
+            pass
+
+    class PatchedViewer:
+        def __init__(
+            self,
+            model,
+            data,
+            width=None,
+            height=None,
+            hide_menus=False,
+            diable_key_callbacks=False,
+        ):
+            pass
+
+    assert _viewer_accepts_kwarg(UnpatchedViewer, "diable_key_callbacks") is False
+    assert _viewer_accepts_kwarg(PatchedViewer, "diable_key_callbacks") is True
 
 
 def test_tracker_default_pose_patterns_are_robot_specific():

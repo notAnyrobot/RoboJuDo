@@ -1,3 +1,4 @@
+import inspect
 import logging
 import time
 
@@ -11,6 +12,10 @@ from robojudo.environment.utils.mujoco_viz import MujocoVisualizer
 from robojudo.utils.util_func import quat_rotate_inverse_np, quatToEuler
 
 logger = logging.getLogger(__name__)
+
+
+def _viewer_accepts_kwarg(viewer_cls, kwarg: str) -> bool:
+    return kwarg in inspect.signature(viewer_cls.__init__).parameters
 
 
 @env_registry.register
@@ -32,14 +37,17 @@ class MujocoEnv(Environment):
         # mujoco.mj_resetDataKeyframe(self.model, self.data, 0)
         mujoco.mj_step(self.model, self.data)  # pyright: ignore[reportAttributeAccessIssue]
 
-        self.viewer = mujoco_viewer.MujocoViewer(
-            self.model,
-            self.data,
-            width=1200,
-            height=900,
-            hide_menus=True,
-            diable_key_callbacks=True,
-        )
+        viewer_kwargs = {
+            "width": 1200,
+            "height": 900,
+            "hide_menus": True,
+        }
+        if _viewer_accepts_kwarg(mujoco_viewer.MujocoViewer, "diable_key_callbacks"):
+            viewer_kwargs["diable_key_callbacks"] = True
+        else:
+            logger.warning("Active mujoco_viewer does not support disabling key callbacks")
+
+        self.viewer = mujoco_viewer.MujocoViewer(self.model, self.data, **viewer_kwargs)
         self.viewer.cam.distance = 3.0
         self.viewer.cam.elevation = -10.0
         self.viewer.cam.azimuth = 180.0
