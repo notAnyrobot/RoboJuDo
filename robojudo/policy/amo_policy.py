@@ -100,7 +100,7 @@ class AMOPolicy(Policy):
                 commands[0] = command_remap(ly, self.commands_map[0])
                 commands[1] = command_remap(rx, self.commands_map[1])
                 commands[2] = command_remap(lx, self.commands_map[2])
-                # commands[3] = command_remap(ry, self.commands_map[3]) # height
+                commands[3] = command_remap(ry, self.commands_map[3]) # height
 
                 button_event = ctrl_data[key]["button_event"]
                 for event in button_event:
