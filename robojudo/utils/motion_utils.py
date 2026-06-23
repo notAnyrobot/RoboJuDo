@@ -134,6 +134,14 @@ class MotionPlayer:
         data = torch.load(motion_file, map_location="cpu", weights_only=False)
 
         if _is_cache_file(data):
+            if int(motion_index) != 0:
+                raise ValueError(
+                    f"single-clip cache file {motion_file!r} cannot select "
+                    f"motion_index={motion_index}. Use a raw multi-motion .pt "
+                    "library with length_starts/motion_num_frames metadata, or "
+                    "load a cache generated for the desired clip without passing "
+                    "--motion-index."
+                )
             self._load_cache(data)
         else:
             self._load_raw(data, motion_index, control_dt)
